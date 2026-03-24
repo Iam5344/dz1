@@ -1,99 +1,88 @@
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-
-public class User
-{
-    public int Id { get; set; }
-    [Required][MinLength(1)] public string Username { get; set; } = null!;
-    [Required][EmailAddress] public string Email { get; set; } = null!;
-    [Required] public string Password { get; set; } = null!;
-    public List<Movie> Movies { get; set; } = new();
-}
-
-public class Movie
-{
-    public int Id { get; set; }
-    [Required][MaxLength(50)] public string Title { get; set; } = null!;
-    [Range(1, int.MaxValue)] public int ReleaseYear { get; set; }
-    public string? Description { get; set; }
-    public DateTime AddedAt { get; set; } = DateTime.Now;
-    public int UserId { get; set; }
-    public User User { get; set; } = null!;
-}
-
-public class UserMovieView
-{
-    public string Username { get; set; } = null!;
-    public string MovieTitle { get; set; } = null!;
-}
-
-public class AppDbContext : DbContext
-{
-    public DbSet<User> Users { get; set; }
-    public DbSet<Movie> Movies { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder options)
-    {
-        options.UseSqlServer("Data Source=DESKTOP-8UTPR8Q\\IAM5344;Initial Catalog=MoviesDb;Integrated Security=True;Encrypt=False;");
-    }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
-        modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
-        modelBuilder.Entity<Movie>().HasOne(m => m.User).WithMany(u => u.Movies).HasForeignKey(m => m.UserId);
-        modelBuilder.Entity<UserMovieView>().HasNoKey().ToView("UserMoviesView");
-    }
-}
+using Microsoft.Data.SqlClient;
+using Dapper;
 
 class Program
 {
-    static AppDbContext db = new AppDbContext();
+    static string cs = "Data Source=DESKTOP-8UTPR8Q\\IAM5344;Initial Catalog=ShelterDb;Integrated Security=True;Encrypt=False;";
 
-    static void Main(string[] args)
+    static void Main()
     {
-        db.Database.Migrate();
+        using var con = new SqlConnection(cs);
+        con.Open();
 
-        db.Database.ExecuteSqlRaw(@"
-            IF NOT EXISTS (SELECT * FROM sys.views WHERE name = 'UserMoviesView')
-            EXEC('CREATE VIEW UserMoviesView AS
-                SELECT U.Username, M.Title AS MovieTitle
-                FROM Users U
-                INNER JOIN Movies M ON U.Id = M.UserId')");
-
-        db.Database.ExecuteSqlRaw(@"
-            IF NOT EXISTS (SELECT * FROM sys.procedures WHERE name = 'AddUser')
-            EXEC('CREATE PROCEDURE AddUser
-                @Username NVARCHAR(MAX),
-                @Email NVARCHAR(MAX),
-                @Password NVARCHAR(MAX)
-                AS BEGIN
-                    INSERT INTO Users (Username, Email, Password)
-                    VALUES (@Username, @Email, @Password)
-                END')");
+        con.Execute(@"
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Dogs' AND xtype='U')
+            CREATE TABLE Dogs (
+                Id INT PRIMARY KEY IDENTITY(1,1),
+                Name NVARCHAR(100) NOT NULL,
+                Age INT NOT NULL,
+                Breed NVARCHAR(100) NOT NULL,
+                IsAdopted BIT NOT NULL DEFAULT 0
+            )");
 
         while (true)
         {
-            Console.WriteLine("\n1. Додати користувача (процедура)");
-            Console.WriteLine("2. Показати подання (користувачі та фільми)");
+            Console.WriteLine("\n1. Додати собаку");
+            Console.WriteLine("2. Всі собаки");
+            Console.WriteLine("3. Собаки в притулку");
+            Console.WriteLine("4. Забрані собаки");
+            Console.WriteLine("5. Пошук за кличкою");
+            Console.WriteLine("6. Пошук за Id");
+            Console.WriteLine("7. Пошук за породою");
             Console.WriteLine("0. Вихід");
             Console.Write("Вибір: ");
             string choice = Console.ReadLine();
 
             if (choice == "1")
             {
-                Console.Write("Username: "); string username = Console.ReadLine();
-                Console.Write("Email: "); string email = Console.ReadLine();
-                Console.Write("Пароль: "); string password = Console.ReadLine();
-                db.Database.ExecuteSqlRaw("EXEC AddUser @p0, @p1, @p2", username, email, password);
+                Console.Write("Кличка: "); string name = Console.ReadLine();
+                Console.Write("Вік: "); int age = int.Parse(Console.ReadLine());
+                Console.Write("Порода: "); string breed = Console.ReadLine();
+
+                con.Execute("INSERT INTO Dogs (Name, Age, Breed, IsAdopted) VALUES (@Name, @Age, @Breed, 0)",
+                    new { Name = name, Age = age, Breed = breed });
                 Console.WriteLine("Додано.");
             }
             else if (choice == "2")
             {
-                foreach (var v in db.Set<UserMovieView>().FromSqlRaw("SELECT * FROM UserMoviesView"))
-                    Console.WriteLine($"{v.Username} | {v.MovieTitle}");
+                var dogs = con.Query("SELECT * FROM Dogs");
+                PrintDogs(dogs);
+            }
+            else if (choice == "3")
+            {
+                var dogs = con.Query("SELECT * FROM Dogs WHERE IsAdopted = 0");
+                PrintDogs(dogs);
+            }
+            else if (choice == "4")
+            {
+                var dogs = con.Query("SELECT * FROM Dogs WHERE IsAdopted = 1");
+                PrintDogs(dogs);
+            }
+            else if (choice == "5")
+            {
+                Console.Write("Кличка: "); string name = Console.ReadLine();
+                var dogs = con.Query("SELECT * FROM Dogs WHERE Name = @Name", new { Name = name });
+                PrintDogs(dogs);
+            }
+            else if (choice == "6")
+            {
+                Console.Write("Id: "); int id = int.Parse(Console.ReadLine());
+                var dogs = con.Query("SELECT * FROM Dogs WHERE Id = @Id", new { Id = id });
+                PrintDogs(dogs);
+            }
+            else if (choice == "7")
+            {
+                Console.Write("Порода: "); string breed = Console.ReadLine();
+                var dogs = con.Query("SELECT * FROM Dogs WHERE Breed = @Breed", new { Breed = breed });
+                PrintDogs(dogs);
             }
             else if (choice == "0") return;
         }
+    }
+
+    static void PrintDogs(IEnumerable<dynamic> dogs)
+    {
+        foreach (var d in dogs)
+            Console.WriteLine($"{d.Id} | {d.Name} | {d.Age} р. | {d.Breed} | {(d.IsAdopted ? "Забрали" : "В притулку")}");
     }
 }
