@@ -11,12 +11,11 @@ class Program
         Console.Write("Введіть повідомлення: ");
         string text = Console.ReadLine();
         MessageBox(IntPtr.Zero, text, "Ваше повідомлення", 0);
-
         bool playAgain = true;
 
         while (playAgain)
         {
-            Console.WriteLine("Загадайте число від 0 до 100");
+            MessageBox(IntPtr.Zero, "Загадайте число від 0 до 100 і натисніть OK", "Нова гра", 0);
 
             int min = 0;
             int max = 100;
@@ -24,27 +23,29 @@ class Program
             while (true)
             {
                 int guess = (min + max) / 2;
-
-                Console.WriteLine($"Це {guess}? (більше / менше / так)");
-                string answer = Console.ReadLine().ToLower();
-
-                if (answer == "так")
+                int result = MessageBox(
+                    IntPtr.Zero,
+                    $"Комп'ютер думає: {guess}\n\nТак — число більше\nНі — число менше\nСкасувати — вгадав",
+                    "Вгадай число",
+                    3
+                );
+                if (result == 2)
                 {
-                    MessageBox(IntPtr.Zero, $"Я вгадав число: {guess}", "Перемога!", 0);
+                    MessageBox(IntPtr.Zero, $"Я вгадав! Це число {guess}!", "Перемога!", 0);
                     break;
                 }
-                else if (answer == "більше")
+                else if (result == 6)
                 {
                     min = guess + 1;
                 }
-                else if (answer == "менше")
+                else if (result == 7)
                 {
                     max = guess - 1;
                 }
             }
 
-            Console.WriteLine("Грати ще?");
-            playAgain = Console.ReadLine().ToLower() == "так";
+            int play = MessageBox(IntPtr.Zero, "Зіграти ще раз?", "Нова гра", 4);
+            playAgain = play == 6;
         }
     }
 }
