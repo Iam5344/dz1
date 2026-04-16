@@ -1,51 +1,136 @@
 using System;
-using System.Runtime.InteropServices;
+using System.Diagnostics;
+using System.Linq;
+using System.Windows.Forms;
 
 class Program
 {
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    public static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
-
+    [STAThread]
     static void Main()
     {
-        Console.Write("Введіть повідомлення: ");
-        string text = Console.ReadLine();
-        MessageBox(IntPtr.Zero, text, "Ваше повідомлення", 0);
-        bool playAgain = true;
+        Application.Run(new Form1());
+    }
+}
 
-        while (playAgain)
+public class Form1 : Form
+{
+    ListBox listProcesses = new ListBox() { Left = 10, Top = 40, Width = 400, Height = 450 };
+    Label lblInfo = new Label() { Left = 420, Top = 40, Width = 350, Height = 450, AutoSize = false };
+    NumericUpDown numInterval = new NumericUpDown() { Left = 130, Top = 10, Width = 80, Minimum = 1, Maximum = 60, Value = 2 };
+    Button btnKill = new Button() { Text = "Завершити процес", Left = 420, Top = 500, Width = 150 };
+    Timer timer = new Timer();
+
+    public Form1()
+    {
+        this.Text = "Менеджер процесів";
+        this.Width = 800;
+        this.Height = 580;
+
+        this.Controls.Add(new Label() { Text = "Інтервал оновлення:", Left = 10, Top = 12, Width = 120 });
+        this.Controls.Add(numInterval);
+        this.Controls.Add(listProcesses);
+        this.Controls.Add(lblInfo);
+        this.Controls.Add(btnKill);
+
+        numInterval.ValueChanged += (s, e) =>
         {
-            MessageBox(IntPtr.Zero, "Загадайте число від 0 до 100 і натисніть OK", "Нова гра", 0);
+            timer.Interval = (int)numInterval.Value * 1000;
+        };
 
-            int min = 0;
-            int max = 100;
+        listProcesses.SelectedIndexChanged += (s, e) => ShowInfo();
 
-            while (true)
+        btnKill.Click += (s, e) =>
+        {
+            if (listProcesses.SelectedItem == null) return;
+
+            string selected = listProcesses.SelectedItem.ToString();
+            int pid = int.Parse(selected.Split('|')[1].Trim());
+
+            try
             {
-                int guess = (min + max) / 2;
-                int result = MessageBox(
-                    IntPtr.Zero,
-                    $"Комп'ютер думає: {guess}\n\nТак — число більше\nНі — число менше\nСкасувати — вгадав",
-                    "Вгадай число",
-                    3
-                );
-                if (result == 2)
+                Process.GetProcessById(pid).Kill();
+                MessageBox.Show("Процес завершено.");
+                LoadProcesses();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Помилка: " + ex.Message);
+            }
+        };
+
+        timer.Interval = (int)numInterval.Value * 1000;
+        timer.Tick += (s, e) => LoadProcesses();
+        timer.Start();
+
+        LoadProcesses();
+    }
+
+    void LoadProcesses()
+    {
+        int selectedPid = -1;
+
+        if (listProcesses.SelectedItem != null)
+        {
+            string sel = listProcesses.SelectedItem.ToString();
+            int.TryParse(sel.Split('|')[1].Trim(), out selectedPid);
+        }
+
+        listProcesses.Items.Clear();
+
+        foreach (var p in Process.GetProcesses().OrderBy(p => p.ProcessName))
+        {
+            try { listProcesses.Items.Add($"{p.ProcessName} | {p.Id}"); }
+            catch { }
+        }
+
+        if (selectedPid != -1)
+        {
+            for (int i = 0; i < listProcesses.Items.Count; i++)
+            {
+                if (listProcesses.Items[i].ToString().Contains($"| {selectedPid}"))
                 {
-                    MessageBox(IntPtr.Zero, $"Я вгадав! Це число {guess}!", "Перемога!", 0);
+                    listProcesses.SelectedIndex = i;
                     break;
                 }
-                else if (result == 6)
-                {
-                    min = guess + 1;
-                }
-                else if (result == 7)
-                {
-                    max = guess - 1;
-                }
             }
+        }
+    }
 
-            int play = MessageBox(IntPtr.Zero, "Зіграти ще раз?", "Нова гра", 4);
-            playAgain = play == 6;
+    void ShowInfo()
+    {
+        if (listProcesses.SelectedItem == null) return;
+
+        string selected = listProcesses.SelectedItem.ToString();
+        int pid = int.Parse(selected.Split('|')[1].Trim());
+
+        try
+        {
+            Process p = Process.GetProcessById(pid);
+            p.Refresh();
+
+            string name = p.ProcessName;
+            int count = Process.GetProcessesByName(name).Length;
+
+            string info = "";
+            info += $"Назва: {p.ProcessName}\n";
+            info += $"PID: {p.Id}\n";
+
+            try { info += $"Час старту: {p.StartTime}\n"; }
+            catch { info += "Час старту: недоступно\n"; }
+
+            try { info += $"Процесорний час: {p.TotalProcessorTime.TotalSeconds:F2} сек\n"; }
+            catch { info += "Процесорний час: недоступно\n"; }
+
+            try { info += $"Кількість потоків: {p.Threads.Count}\n"; }
+            catch { info += "Кількість потоків: недоступно\n"; }
+
+            info += $"Копій процесу: {count}\n";
+
+            lblInfo.Text = info;
+        }
+        catch (Exception ex)
+        {
+            lblInfo.Text = "Помилка: " + ex.Message;
         }
     }
 }
