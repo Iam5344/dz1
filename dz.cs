@@ -1,73 +1,55 @@
 using System;
-using System.Threading;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 
-class BankAccount
+namespace ConsoleApp31;
+class Program
 {
-    public static int balance = 1000;
-    public static object locker = new object();
-}
-
-Thread[] threads1 = new Thread[5];
-
-for (int i = 0; i < threads1.Length; i++)
-{
-    threads1[i] = new Thread(() =>
+    static void Main()
     {
-        Random rnd = new Random();
-        for (int j = 0; j < 5; j++)
+        try
         {
-            lock (BankAccount.locker)
-            {
-                int amount = rnd.Next(1, 200);
-                bool deposit = rnd.Next(0, 2) == 0;
+            Console.Write("Введіть адрес сайту:");
+            string host = Console.ReadLine();
 
-                if (deposit)
-                {
-                    BankAccount.balance += amount;
-                    Console.WriteLine($"Потік {Thread.CurrentThread.ManagedThreadId}: +{amount} | Баланс: {BankAccount.balance}");
-                }
-                else
-                {
-                    if (amount <= BankAccount.balance)
-                    {
-                        BankAccount.balance -= amount;
-                        Console.WriteLine($"Потік {Thread.CurrentThread.ManagedThreadId}: -{amount} | Баланс: {BankAccount.balance}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Потік {Thread.CurrentThread.ManagedThreadId}: недостатньо коштів | Баланс: {BankAccount.balance}");
-                    }
-                }
-            }
+            IPHostEntry ipHost = Dns.GetHostEntry(host);
+            IPAddress ipAddr = ipHost.AddressList[0];
+            IPEndPoint ipEndPoint = new IPEndPoint(ipAddr, 80);
+
+            Socket sender = new Socket(
+                ipAddr.AddressFamily,
+                SocketType.Stream,
+                ProtocolType.Tcp
+            );
+
+            sender.Connect(ipEndPoint);
+
+            Console.WriteLine("Socket connected to {0}",
+                sender.RemoteEndPoint.ToString());
+
+            string request =
+                "GET / HTTP/1.1\r\n" +
+                "Host: " + host + "\r\n" +
+                "Connection: close\r\n\r\n";
+
+            byte[] msg = Encoding.ASCII.GetBytes(request);
+
+            int bytesSent = sender.Send(msg);
+
+            byte[] bytes = new byte[1024];
+
+            int bytesRec = sender.Receive(bytes);
+                Encoding.ASCII.GetString(bytes, 0, bytesRec));
+
+            sender.Shutdown(SocketShutdown.Both);
+            sender.Close();
         }
-    });
-    threads1[i].Start();
+        catch (Exception e)
+        {
+            Console.WriteLine(e.ToString());
+        }
+
+        Console.ReadKey();
+    }
 }
-
-for (int i = 0; i < threads1.Length; i++)
-    threads1[i].Join();
-
-Semaphore semaphore = new Semaphore(3, 3);
-
-Thread[] threads2 = new Thread[10];
-
-for (int i = 0; i < threads2.Length; i++)
-{
-    threads2[i] = new Thread((id) =>
-    {
-        Console.WriteLine($"Потік {id} очікує...");
-        semaphore.WaitOne();
-
-        Console.WriteLine($"Потік {id} виконується...");
-        Random rnd = new Random();
-        for (int j = 0; j < 5; j++)
-            Console.WriteLine($"  Потік {id}: {rnd.Next(0, 1000)}");
-
-        Console.WriteLine($"Потік {id} завершився");
-        semaphore.Release();
-    });
-    threads2[i].Start(i);
-}
-
-for (int i = 0; i < threads2.Length; i++)
-    threads2[i].Join();
