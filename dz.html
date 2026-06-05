@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>const numToSquare = prompt("Введіть число для піднесення до 2 ступеня:");
+alert(numToSquare * numToSquare);
+
+const avg1 = Number(prompt("Введіть перше число для середнього арифметичного:"));
+const avg2 = Number(prompt("Введіть друге число:"));
+alert((avg1 + avg2) / 2);
+
+const squareSide = prompt("Введіть довжину сторони квадрата:");
+alert(squareSide * squareSide);
+
+const KM_TO_MILES = 0.621371;
+const km = prompt("Введіть кілометри:");
+alert(km * KM_TO_MILES);
+
+const calc1 = Number(prompt("Калькулятор. Введіть перше число:"));
+const calc2 = Number(prompt("Введіть друге число:"));
+alert("Сума: " + (calc1 + calc2) + "\nРізниця: " + (calc1 - calc2) + "\nДобуток: " + (calc1 * calc2) + "\nЧастка: " + (calc1 / calc2));
+
+const a = Number(prompt("Рівняння a * x + b = 0. Введіть a:"));
+const b = Number(prompt("Введіть b:"));
+alert("x = " + (-b / a));
+
+const hours = Number(prompt("Введіть поточну годину (0-23):"));
+const minutes = Number(prompt("Введіть поточні хвилини (0-59):"));
+const totalMinutesLeft = (24 * 60) - (hours * 60 + minutes);
+alert("Залишилось до наступного дня: " + (totalMinutesLeft / 60) + " год та " + (totalMinutesLeft % 60) + " хв");
+
+const num3 = prompt("Введіть тризначне число:");
+alert((num3 / 10) % 10);
+
+const num5 = prompt("Введіть п'ятизначне число:");
+alert((num5 % 10) * 10000 + (num5 / 10));
+
+const sales = prompt("Введіть загальну суму продажу за місяць:");
+alert("Зарплата: " + (250 + sales * 0.1));</script>
+</body>
+</html>
