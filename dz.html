@@ -6,40 +6,96 @@
     <title>Document</title>
 </head>
 <body>
-    <script>const numToSquare = prompt("Введіть число для піднесення до 2 ступеня:");
-alert(numToSquare * numToSquare);
 
-const avg1 = Number(prompt("Введіть перше число для середнього арифметичного:"));
-const avg2 = Number(prompt("Введіть друге число:"));
-alert((avg1 + avg2) / 2);
+    <script>
+        let start = parseInt(prompt("Введіть початок діапазону:"));
+        let end = parseInt(prompt("Введіть кінець діапазону:"));
+        let sum = 0;
+        for (let i = start; i <= end; i++) {
+            sum += i;
+        }
+        alert(`Сума чисел у діапазоні: ${sum}`);
 
-const squareSide = prompt("Введіть довжину сторони квадрата:");
-alert(squareSide * squareSide);
+        let a = parseInt(prompt("НСД. Введіть перше число:"));
+        let b = parseInt(prompt("Введіть друге число:"));
+        while (b !== 0) {
+            let temp = b;
+            b = a % b;
+            a = temp;
+        }
+        alert(`Найбільший спільний дільник: ${a}`);
 
-const KM_TO_MILES = 0.621371;
-const km = prompt("Введіть кілометри:");
-alert(km * KM_TO_MILES);
+        let num = parseInt(prompt("Введіть число для пошуку дільників:"));
+        let divisors = [];
+        for (let i = 1; i <= num; i++) {
+            if (num % i === 0) divisors.push(i);
+        }
+        alert(`Дільники числа: ${divisors.join(', ')}`);
 
-const calc1 = Number(prompt("Калькулятор. Введіть перше число:"));
-const calc2 = Number(prompt("Введіть друге число:"));
-alert("Сума: " + (calc1 + calc2) + "\nРізниця: " + (calc1 - calc2) + "\nДобуток: " + (calc1 * calc2) + "\nЧастка: " + (calc1 / calc2));
+        let number = Math.abs(parseInt(prompt("Введіть число для підрахунку цифр:")));
+        let count = 0;
+        if (number === 0) {
+            count = 1;
+        } else {
+            while (number > 0) {
+                count++;
+                number = Math.floor(number / 10);
+            }
+        }
+        alert(`Kількість цифр у числі: ${count}`);
 
-const a = Number(prompt("Рівняння a * x + b = 0. Введіть a:"));
-const b = Number(prompt("Введіть b:"));
-alert("x = " + (-b / a));
+        let positive = 0, negative = 0, zeros = 0, even = 0, odd = 0;
+        for (let i = 1; i <= 10; i++) {
+            let userNum = parseInt(prompt(`Введіть число (${i} із 10):`));
+            if (userNum > 0) positive++;
+            else if (userNum < 0) negative++;
+            else zeros++;
+            
+            if (userNum % 2 === 0) even++;
+            else odd++;
+        }
+        alert(`Додатних: ${positive}\nВід'ємних: ${negative}\nНулів: ${zeros}\nПарних: ${even}\nНепарних: ${odd}`);
 
-const hours = Number(prompt("Введіть поточну годину (0-23):"));
-const minutes = Number(prompt("Введіть поточні хвилини (0-59):"));
-const totalMinutesLeft = (24 * 60) - (hours * 60 + minutes);
-alert("Залишилось до наступного дня: " + (totalMinutesLeft / 60) + " год та " + (totalMinutesLeft % 60) + " хв");
+        let calcAgain;
+        do {
+            let n1 = parseFloat(prompt("Калькулятор. Перше число:"));
+            let sign = prompt("Знак (+, -, *, /):");
+            let n2 = parseFloat(prompt("Друге число:"));
+            let res;
+            if (sign === '+') res = n1 + n2;
+            else if (sign === '-') res = n1 - n2;
+            else if (sign === '*') res = n1 * n2;
+            else if (sign === '/') res = n1 / n2;
+            else res = "Помилка";
+            alert(`Результат: ${res}`);
+            calcAgain = confirm("Бажаєте розв'язати ще один приклад?");
+        } while (calcAgain);
 
-const num3 = prompt("Введіть тризначне число:");
-alert((num3 / 10) % 10);
+        let numStr = prompt("Введіть число для зміщення:");
+        let shift = parseInt(prompt("На скільки цифр змістити?")) % numStr.length;
+        for (let i = 0; i < shift; i++) {
+            numStr = numStr.slice(1) + numStr[0];
+        }
+        alert(`Результат зміщення: ${numStr}`);
 
-const num5 = prompt("Введіть п'ятизначне число:");
-alert((num5 % 10) * 10000 + (num5 / 10));
+        const days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя"];
+        let index = 0;
+        let nextDay;
+        do {
+            nextDay = confirm(`${days[index]}. Бажаєте побачити назву наступного дня тижня?`);
+            index = (index + 1) % 7; 
+        } while (nextDay);
 
-const sales = prompt("Введіть загальну суму продажу за місяць:");
-alert("Зарплата: " + (250 + sales * 0.1));</script>
+        let tableResult = "";
+        for (let i = 2; i <= 9; i++) {
+            tableResult += `--- Таблиця на ${i} ---\n`;
+            for (let j = 1; j <= 10; j++) {
+                tableResult += `${i} x ${j} = ${i * j}\n`;
+            }
+            tableResult += "\n";
+        }
+        console.log(tableResult);
+        alert("Таблицю множення виведено в консоль (F12 -> Console)");
+    </script>
 </body>
 </html>
