@@ -8,94 +8,126 @@
 <body>
 
     <script>
-        let start = parseInt(prompt("Введіть початок діапазону:"));
-        let end = parseInt(prompt("Введіть кінець діапазону:"));
-        let sum = 0;
-        for (let i = start; i <= end; i++) {
-            sum += i;
-        }
-        alert(`Сума чисел у діапазоні: ${sum}`);
+class Marker {
+    constructor(color, inkPercentage) {
+        this.color = color;
+        this.inkPercentage = inkPercentage;
+    }
 
-        let a = parseInt(prompt("НСД. Введіть перше число:"));
-        let b = parseInt(prompt("Введіть друге число:"));
-        while (b !== 0) {
-            let temp = b;
-            b = a % b;
-            a = temp;
-        }
-        alert(`Найбільший спільний дільник: ${a}`);
-
-        let num = parseInt(prompt("Введіть число для пошуку дільників:"));
-        let divisors = [];
-        for (let i = 1; i <= num; i++) {
-            if (num % i === 0) divisors.push(i);
-        }
-        alert(`Дільники числа: ${divisors.join(', ')}`);
-
-        let number = Math.abs(parseInt(prompt("Введіть число для підрахунку цифр:")));
-        let count = 0;
-        if (number === 0) {
-            count = 1;
-        } else {
-            while (number > 0) {
-                count++;
-                number = Math.floor(number / 10);
+    print(text) {
+        let printedText = "";
+        for (let char of text) {
+            if (char !== " ") {
+                if (this.inkPercentage >= 0.5) {
+                    printedText += char;
+                    this.inkPercentage -= 0.5;
+                } else {
+                    break;
+                }
+            } else {
+                printedText += char;
             }
         }
-        alert(`Kількість цифр у числі: ${count}`);
+        document.write(`<p style="color: ${this.color};">${printedText}</p>`);
+    }
+}
 
-        let positive = 0, negative = 0, zeros = 0, even = 0, odd = 0;
-        for (let i = 1; i <= 10; i++) {
-            let userNum = parseInt(prompt(`Введіть число (${i} із 10):`));
-            if (userNum > 0) positive++;
-            else if (userNum < 0) negative++;
-            else zeros++;
-            
-            if (userNum % 2 === 0) even++;
-            else odd++;
+class RefillableMarker extends Marker {
+    refill() {
+        this.inkPercentage = 100;
+    }
+}
+
+const simpleMarker = new Marker("blue", 2);
+simpleMarker.print("Hello World! This text is too long for this marker.");
+
+const smartMarker = new RefillableMarker("red", 1);
+smartMarker.print("Short text");
+smartMarker.refill();
+smartMarker.print("This text is printed after refilling the marker completely.");
+
+
+class ExtendedDate extends Date {
+    constructor(...args) {
+        super(...args);
+    }
+
+    getTextMonth() {
+        const months = [
+            "січня", "лютого", "березня", "квітня", "травня", "червня",
+            "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"
+        ];
+        return `${this.getDate()} ${months[this.getMonth()]}`;
+    }
+
+    isFutureOrPresent() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const compareDate = new Date(this.getTime());
+        compareDate.setHours(0, 0, 0, 0);
+        return compareDate >= today;
+    }
+
+    isLeapYear() {
+        const year = this.getFullYear();
+        return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    }
+
+    getNextDate() {
+        const next = new ExtendedDate(this.getTime());
+        next.setDate(this.getDate() + 1);
+        return next;
+    }
+}
+
+const extDate = new ExtendedDate("2026-06-25");
+document.write(`<p>Дата текстом: ${extDate.getTextMonth()}</p>`);
+document.write(`<p>Майбутня або поточна: ${extDate.isFutureOrPresent()}</p>`);
+document.write(`<p>Високосний рік: ${extDate.isLeapYear()}</p>`);
+document.write(`<p>Наступна дата: ${extDate.getNextDate().toLocaleDateString()}</p>`);
+
+
+class Employee {
+    constructor(name, position, department, salary) {
+        this.name = name;
+        this.position = position;
+        this.department = department;
+        this.salary = salary;
+    }
+}
+
+class EmpTable {
+    constructor(employees) {
+        this.employees = employees;
+    }
+
+    getHtml() {
+        let html = '<table border="1" cellpadding="5" cellspacing="0">';
+        html += '<thead><tr><th>Ім\'я</th><th>Посада</th><th>Відділ</th><th>Зарплата</th></tr></thead>';
+        html += '<tbody>';
+        
+        for (let emp of this.employees) {
+            html += `<tr>
+                <td>${emp.name}</td>
+                <td>${emp.position}</td>
+                <td>${emp.department}</td>
+                <td>${emp.salary}</td>
+            </tr>`;
         }
-        alert(`Додатних: ${positive}\nВід'ємних: ${negative}\nНулів: ${zeros}\nПарних: ${even}\nНепарних: ${odd}`);
+        
+        html += '</tbody></table>';
+        return html;
+    }
+}
 
-        let calcAgain;
-        do {
-            let n1 = parseFloat(prompt("Калькулятор. Перше число:"));
-            let sign = prompt("Знак (+, -, *, /):");
-            let n2 = parseFloat(prompt("Друге число:"));
-            let res;
-            if (sign === '+') res = n1 + n2;
-            else if (sign === '-') res = n1 - n2;
-            else if (sign === '*') res = n1 * n2;
-            else if (sign === '/') res = n1 / n2;
-            else res = "Помилка";
-            alert(`Результат: ${res}`);
-            calcAgain = confirm("Бажаєте розв'язати ще один приклад?");
-        } while (calcAgain);
+const bankEmployees = [
+    new Employee("Олександр", "Менеджер", "Кредитний", 25000),
+    new Employee("Марія", "Касир", "Касовий", 18000),
+    new Employee("Дмитро", "Аналітик", "Фінансовий", 35000)
+];
 
-        let numStr = prompt("Введіть число для зміщення:");
-        let shift = parseInt(prompt("На скільки цифр змістити?")) % numStr.length;
-        for (let i = 0; i < shift; i++) {
-            numStr = numStr.slice(1) + numStr[0];
-        }
-        alert(`Результат зміщення: ${numStr}`);
-
-        const days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя"];
-        let index = 0;
-        let nextDay;
-        do {
-            nextDay = confirm(`${days[index]}. Бажаєте побачити назву наступного дня тижня?`);
-            index = (index + 1) % 7; 
-        } while (nextDay);
-
-        let tableResult = "";
-        for (let i = 2; i <= 9; i++) {
-            tableResult += `--- Таблиця на ${i} ---\n`;
-            for (let j = 1; j <= 10; j++) {
-                tableResult += `${i} x ${j} = ${i * j}\n`;
-            }
-            tableResult += "\n";
-        }
-        console.log(tableResult);
-        alert("Таблицю множення виведено в консоль (F12 -> Console)");
+const empTable = new EmpTable(bankEmployees);
+document.write(empTable.getHtml());
     </script>
 </body>
 </html>
