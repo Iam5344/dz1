@@ -1,129 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-
-        .upload-area {
-            border: 2px #ccc;
-            padding: 20px;
-            text-align: center;
-            max-width: 600px;
-            margin-bottom: 30px;
-            border-radius: 4px;
-        }
-
-        table {
-            width: 100%;
-            max-width: 640px;
-            border-collapse: collapse;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        th,
-        td {
-            border: 1px solid #e0e0e0;
-            padding: 10px 12px;
-            text-align: left;
-            vertical-align: top;
-        }
-
-        th {
-            background-color: #f8f8f8;
-            font-weight: bold;
-        }
-
-        th:nth-child(1),
-        td:nth-child(1) {
-            width: 35%;
-        }
-
-        pre {
-            margin: 0;
-            white-space: pre-wrap;
-            font-family: monospace;
-            color: #0a77ec;
-        }
-    </style>
+  <title>Завдання JavaScript</title>
 </head>
-
 <body>
+  <h1>Відкрийте консоль розробника (F12 -> Console)</h1>
 
-    <h2>Переглядач JSON-файлів</h2>
+  <script>
 
-    <div class="upload-area">
-        <input type="file" id="jsonFileInput" accept=".json,application/json">
-    </div>
+    function processArray(array, callback) {
+      const result = [];
+      for (let i = 0; i < array.length; i++) {
+        result.push(callback(array[i]));
+      }
+      return result;
+    }
 
-    <table id="dataTable" style="display: none;">
-        <thead>
-            <tr>
-                <th>Поле (Ключ)</th>
-                <th>Значення</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    function doubleElement(element) {
+      return element * 2;
+    }
 
-    <script>
-        const fileInput = document.getElementById('jsonFileInput');
-        const dataTable = document.getElementById('dataTable');
-        const tableBody = document.getElementById('tableBody');
+    function reverseElement(element) {
+      return String(element).split('').reverse().join('');
+    }
 
-        fileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
+    console.log("--- Завдання 1 ---");
+    console.log(processArray([1, 2, 3, 4, 5], doubleElement));
+    console.log(processArray(["hello", "world"], reverseElement));
 
-            const reader = new FileReader();
 
-            reader.onload = (e) => {
-                try {
-                    const json = JSON.parse(e.target.result);
-                    renderTable(json);
-                } catch (error) {
-                    alert(`Помилка: ${error.message}`);
-                    dataTable.style.display = 'none';
-                }
-            };
 
-            reader.readAsText(file);
-        });
-
-        function renderTable(data) {
-            tableBody.innerHTML = '';
-
-            if (typeof data !== 'object' || data === null) {
-                return;
-            }
-
-            Object.entries(data).forEach(([key, value]) => {
-                const row = document.createElement('tr');
-
-                const keyTd = document.createElement('td');
-                keyTd.textContent = key;
-
-                const valTd = document.createElement('td');
-
-                if (typeof value === 'object' && value !== null) {
-                    const pre = document.createElement('pre');
-                    pre.textContent = JSON.stringify(value, null, 2);
-                    valTd.appendChild(pre);
-                } else {
-                    valTd.textContent = value === null ? 'null' : value;
-                }
-
-                row.appendChild(keyTd);
-                row.appendChild(valTd);
-                tableBody.appendChild(row);
-            });
-
-            dataTable.style.display = 'table';
+    function filterArray(array, callback) {
+      const result = [];
+      for (let i = 0; i < array.length; i++) {
+        if (callback(array[i])) {
+          result.push(array[i]);
         }
-    </script>
+      }
+      return result;
+    }
 
+    function isEven(number) {
+      return number % 2 === 0;
+    }
+
+    function isShortWord(word) {
+      return word.length <= 4;
+    }
+
+    console.log("\n--- Завдання 2 ---");
+    console.log(filterArray([1, 2, 3, 4, 5, 6], isEven));
+    console.log(filterArray(["apple", "cat", "banana", "dog", "js"], isShortWord));
+
+
+    function washDishes() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve("Посуд вимито");
+        }, 2000);
+      });
+    }
+
+    function cleanRoom() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve("Кімнату прибрано");
+        }, 4000);
+      });
+    }
+
+    function makeDinner() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve("Вечеря приготована");
+        }, 7000);
+      });
+    }
+
+    console.log("\n--- Завдання 3 (чекайте виконання Promises) ---");
+    washDishes()
+      .then((result) => {
+        console.log(result);
+        return cleanRoom();
+      })
+      .then((result) => {
+        console.log(result);
+        return makeDinner();
+      })
+      .then((result) => {
+        console.log(result);
+      });
+  </script>
 </body>
-
 </html>
