@@ -1,97 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Завдання JavaScript</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title></title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fcfcfc;
+      padding: 20px;
+    }
+
+    .formatter-container {
+      background-color: #fdf5e6;
+      border: 1px solid #e0d8c8;
+      padding: 20px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .left-header {
+      width: 45%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .right-header {
+      width: 48%;
+    }
+
+    .error-msg {
+      color: #b30000;
+      font-weight: bold;
+      font-size: 13px;
+      display: none;
+    }
+
+    .editor-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    textarea, pre {
+      width: 45%;
+      height: 350px;
+      border: 1px solid #b5b5b5;
+      border-radius: 3px;
+      background-color: #fff;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 8px;
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      overflow-y: auto;
+    }
+
+    .format-btn {
+      width: 30px;
+      height: 350px;
+      background-color: #e6e6e6;
+      border: 1px solid #b5b5b5;
+      border-radius: 3px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .format-btn:hover {
+      background-color: #d8d8d8;
+    }
+  </style>
 </head>
 <body>
-  <h1>Відкрийте консоль розробника (F12 -> Console)</h1>
+
+  <div class="formatter-container">
+    <div class="header-row">
+      <div class="left-header">
+        <span>Enter JSON data:</span>
+        <span id="errorMessage" class="error-msg">[format error]</span>
+      </div>
+      <div class="right-header">
+        <span>Formatted JSON data:</span>
+      </div>
+    </div>
+
+    <div class="editor-row">
+      <textarea id="jsonInput" placeholder="Enter JSON here..."></textarea>
+      
+      <button id="formatBtn" class="format-btn">&#9654;</button>
+      
+      <pre id="jsonOutput"></pre>
+    </div>
+  </div>
 
   <script>
+    const jsonInput = document.getElementById('jsonInput');
+    const jsonOutput = document.getElementById('jsonOutput');
+    const errorMessage = document.getElementById('errorMessage');
+    const formatBtn = document.getElementById('formatBtn');
 
-    function processArray(array, callback) {
-      const result = [];
-      for (let i = 0; i < array.length; i++) {
-        result.push(callback(array[i]));
+    formatBtn.addEventListener('click', () => {
+      const inputText = jsonInput.value.trim();
+
+      if (!inputText) {
+        jsonOutput.textContent = '';
+        errorMessage.style.display = 'none';
+        return;
       }
-      return result;
-    }
 
-    function doubleElement(element) {
-      return element * 2;
-    }
-
-    function reverseElement(element) {
-      return String(element).split('').reverse().join('');
-    }
-
-    console.log("--- Завдання 1 ---");
-    console.log(processArray([1, 2, 3, 4, 5], doubleElement));
-    console.log(processArray(["hello", "world"], reverseElement));
-
-
-
-    function filterArray(array, callback) {
-      const result = [];
-      for (let i = 0; i < array.length; i++) {
-        if (callback(array[i])) {
-          result.push(array[i]);
-        }
+      try {
+        const parsed = JSON.parse(inputText);
+        jsonOutput.textContent = JSON.stringify(parsed, null, 4);
+        errorMessage.style.display = 'none';
+      } catch (error) {
+        jsonOutput.textContent = '';
+        errorMessage.style.display = 'inline';
       }
-      return result;
-    }
-
-    function isEven(number) {
-      return number % 2 === 0;
-    }
-
-    function isShortWord(word) {
-      return word.length <= 4;
-    }
-
-    console.log("\n--- Завдання 2 ---");
-    console.log(filterArray([1, 2, 3, 4, 5, 6], isEven));
-    console.log(filterArray(["apple", "cat", "banana", "dog", "js"], isShortWord));
-
-
-    function washDishes() {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve("Посуд вимито");
-        }, 2000);
-      });
-    }
-
-    function cleanRoom() {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve("Кімнату прибрано");
-        }, 4000);
-      });
-    }
-
-    function makeDinner() {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve("Вечеря приготована");
-        }, 7000);
-      });
-    }
-
-    console.log("\n--- Завдання 3 (чекайте виконання Promises) ---");
-    washDishes()
-      .then((result) => {
-        console.log(result);
-        return cleanRoom();
-      })
-      .then((result) => {
-        console.log(result);
-        return makeDinner();
-      })
-      .then((result) => {
-        console.log(result);
-      });
+    });
   </script>
+
 </body>
 </html>
